@@ -1,1 +1,1278 @@
-index3
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FareGate Ops Composer (V1)</title>
+
+<style>
+:root{
+  --bg:#0b1220; --card:#121a2b; --text:#e8eefc; --muted:#9fb0d8;
+  --accent:#3b82f6; --ok:#17c964; --err:#f31260; --border:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--text);
+}
+.wrap{max-width:1040px;margin:28px auto;padding:16px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 10px 28px rgba(0,0,0,.35);
+  padding:16px;
+  margin-bottom:14px;
+}
+h1{margin:0 0 8px;font-size:20px}
+h2{margin:0 0 8px;font-size:16px}
+.sub{color:var(--muted);font-size:13px; margin:0 0 10px}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+input,textarea,select{
+  width:100%;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  padding:10px 12px;
+}
+textarea{min-height:90px;resize:vertical}
+.row{display:grid;gap:12px}
+.row.two{grid-template-columns:1fr 1fr}
+.row.three{grid-template-columns:1fr 1fr 1fr}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+button{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+}
+button.primary{background:rgba(59,130,246,.18)}
+button.good{background:rgba(23,201,100,.18)}
+button.warn{background:rgba(243,18,96,.18)}
+.preview{
+  white-space:pre-wrap;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:12px;
+  background:rgba(0,0,0,.25);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  min-height:120px;
+}
+.status{margin-top:8px;font-size:13px}
+.ok{color:var(--ok)}
+.err{color:var(--err)}
+.notice{
+  border:1px solid rgba(59,130,246,.35);
+  background:rgba(59,130,246,.12);
+  border-radius:12px;
+  padding:10px 12px;
+  color:var(--text);
+  font-size:12px;
+  line-height:1.35;
+}
+code{font-family:ui-monospace,Menlo,Consolas,monospace}
+.small{font-size:12px;color:var(--muted)}
+.checkgrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:10px;
+}
+@media(min-width:900px){
+  .checkgrid{grid-template-columns: repeat(4, minmax(0,1fr));}
+}
+.badge{
+  display:inline-block;
+  font-size:11px;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+}
+.kv{
+  display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;
+}
+.kv span{
+  font-size:11px;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+}
+
+/* "Now" button next to date/time fields */
+.fieldRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.fieldRow input{flex:1}
+button.nowBtn{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  font-weight:700;
+}
+
+/* Expandable group styling */
+details.ccDetails{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+  overflow:hidden;
+}
+details.ccDetails > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:10px 10px;
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+}
+details.ccDetails > summary::-webkit-details-marker{display:none}
+.detailsBody{
+  padding:10px 10px 12px 10px;
+  border-top:1px solid var(--border);
+}
+.groupTools{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.groupTools input{flex:1}
+
+/* Email rows: table-like, readable, wraps cleanly (Option B) */
+.emailRow{
+  display:grid;
+  grid-template-columns: 22px 1fr auto;
+  gap:10px;
+  align-items:start;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:8px 10px;
+  background:rgba(255,255,255,.02);
+}
+.emailRow input[type="checkbox"]{
+  width:auto;
+  margin:0;
+}
+.emailRow .emailText{
+  font-size:12px;
+  line-height:1.25;
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  min-width:0;
+}
+.emailRow button{
+  white-space:nowrap;
+  padding:8px 10px;
+  border-radius:12px;
+}
+
+.mini{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<!-- Preferences -->
+<div class="card">
+  <h1>FareGate Ops Composer (V1)</h1>
+  <p class="sub">Dispatch & Closure email generator (Gmail Web → always uses helpdesk)</p>
+
+  <div class="notice">
+    This web app opens Gmail compose using <code>helpdesk@nexien.com</code> via <code>authuser</code>.
+    <br><b>Requirement:</b> <code>helpdesk@nexien.com</code> must already be logged into this browser profile.
+  </div>
+
+  <div class="row two" style="margin-top:10px">
+    <div>
+      <label>Your Name (signature)</label>
+      <input id="sigName" placeholder="e.g., Abram Gearig">
+      <div class="small" style="margin-top:6px">This name is inserted into the email footer.</div>
+    </div>
+
+    <div>
+      <label>To Primary Recipient</label>
+      <input id="toAddr" list="toEmails" placeholder="Start typing an email…">
+      <datalist id="toEmails"></datalist>
+      <div class="small" style="margin-top:6px">
+        Optional. You can leave this blank and send to CC-only.
+      </div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div>
+      <label>Manual CC Extras (optional)</label>
+      <input id="ccManual" placeholder="someone@domain.com, another@domain.com">
+      <div class="small" style="margin-top:6px">Use this for one-offs. Groups below auto-add CCs.</div>
+    </div>
+    <div></div>
+  </div>
+
+  <label style="margin-top:14px">CC Groups (click a group to expand)</label>
+  <div id="ccGroupsUI"></div>
+
+  <label style="margin-top:14px">Computed CC (preview)</label>
+  <input id="ccComputed" readonly>
+
+  <div class="btns">
+    <button class="primary" id="openHelpdesk">Open Helpdesk Inbox</button>
+    <button class="primary" id="savePrefs">Save</button>
+    <button id="loadPrefs">Reload</button>
+    <button class="warn" id="clearPrefs">Clear</button>
+    <button class="good" id="copyRecipientsTop">Copy All Recipients (To + CC)</button>
+  </div>
+  <div id="prefStatus" class="status"></div>
+
+  <div class="mini">
+    Notes: Group edits (disable/add/remove/reset) are saved locally in this browser (localStorage). Nothing is sent anywhere.
+  </div>
+</div>
+
+<!-- Ticket Fields -->
+<div class="card">
+  <h2>Ticket Fields</h2>
+
+  <div class="row two">
+    <div>
+      <label>Station Name</label>
+      <input id="station" list="stations" placeholder="Start typing… (filters gates)">
+      <datalist id="stations"></datalist>
+      <div class="kv">
+        <span>Line: <b id="lineOut">—</b></span>
+        <span>Site ID: <b id="siteOut">—</b></span>
+        <span>Gates loaded: <b id="gateCountOut">0</b></span>
+      </div>
+    </div>
+
+    <div>
+      <label>Gate # (Faregate ID)</label>
+      <input id="fgid" list="gates" placeholder="Start typing… (filtered by station)">
+      <datalist id="gates"></datalist>
+      <div class="small" style="margin-top:6px">Pick from filtered list, or type manually if needed.</div>
+    </div>
+  </div>
+
+  <div class="row two">
+    <div>
+      <label>Ticket ID</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-weight:700;letter-spacing:.4px">FM-</span>
+        <input id="ticketId" placeholder="12345">
+      </div>
+    </div>
+
+    <div>
+      <label>Technician</label>
+      <select id="tech">
+        <option value="">Select technician…</option>
+        <option>Abram Gearig</option>
+        <option>Aijaz Sabir</option>
+        <option>Asanti Hudson</option>
+        <option>Byoungok Lim</option>
+        <option>Charles Lee</option>
+        <option>Demetrius Harper</option>
+        <option>Devon Johnson</option>
+        <option>Francisco Leal</option>
+        <option>Gunsuk Yang</option>
+        <option>Jose Juarez</option>
+        <option>Joshua Almeda</option>
+        <option>Juan Hernandez</option>
+        <option>Julio Martinez</option>
+        <option>Julio Novelo</option>
+        <option>Junghee Mun</option>
+        <option>Pablo Almeda Rodriguez</option>
+        <option>Rafael Terrazas</option>
+        <option>Revic Cho</option>
+        <option>Roger Diaz</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row three">
+    <div>
+      <label>Incident Date/Time:</label>
+      <div class="fieldRow">
+        <input id="dtReported" placeholder="MM/DD/YYYY HH:MM   e.g., 12/18/2025 17:46">
+        <button type="button" class="nowBtn" id="nowIncident">Now</button>
+      </div>
+    </div>
+    <div>
+      <label>Ticket Received (Date/Time):</label>
+      <div class="fieldRow">
+        <input id="dtDispatch" placeholder="MM/DD/YYYY HH:MM   e.g., 12/19/2025 08:06">
+        <button type="button" class="nowBtn" id="nowReceived">Now</button>
+      </div>
+    </div>
+    <div>
+      <label>Repair Date/Time:</label>
+      <div class="fieldRow">
+        <input id="dtArrival" placeholder="MM/DD/YYYY HH:MM   e.g., 12/19/2025 08:09">
+        <button type="button" class="nowBtn" id="nowRepair">Now</button>
+      </div>
+    </div>
+  </div>
+
+  <label>Issue Details</label>
+  <textarea id="issue" placeholder="Describe the issue…"></textarea>
+
+  <label>Actions Taken</label>
+  <textarea id="actions" placeholder="What was done…"></textarea>
+
+  <div class="row two">
+    <div>
+      <label>Faregate Status</label>
+      <select id="statusSel">
+        <option value="">Select…</option>
+        <option>Closed</option>
+        <option>In Service</option>
+        <option>Out of Service</option>
+        <option>Degrade Mode</option>
+        <option>Pending Parts</option>
+      </select>
+    </div>
+    <div>
+      <label>Cause (if known)</label>
+      <input id="cause" placeholder="Optional">
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="primary" id="build">Build Emails + Daily Line</button>
+    <button id="clearFields">Clear Ticket Fields</button>
+  </div>
+  <div id="buildStatus" class="status"></div>
+</div>
+
+<!-- Outputs -->
+<div class="card">
+  <h2>Outputs</h2>
+
+  <label>Dispatch Email</label>
+  <div id="dispatchPreview" class="preview"></div>
+  <div class="btns">
+    <button class="good" id="copyDispatch">Copy</button>
+    <button class="primary" id="openDispatch">Open Gmail (helpdesk)</button>
+  </div>
+
+  <label>Ticket Closed Email</label>
+  <div id="closedPreview" class="preview"></div>
+  <div class="btns">
+    <button class="good" id="copyClosed">Copy</button>
+    <button class="primary" id="openClosed">Open Gmail (helpdesk)</button>
+  </div>
+
+  <label>Daily Report Line (optional helper)</label>
+  <div id="dailyPreview" class="preview"></div>
+  <div class="btns">
+    <button class="good" id="copyDaily">Copy Daily Line (tabs)</button>
+  </div>
+
+  <div id="actionStatus" class="status"></div>
+</div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const prefsKey = "fairgate_prefs_v1";
+const HELP_DESK = "helpdesk@nexien.com";
+
+/**
+ * Embedded site dataset.
+ * Format: Line,Site ID,Site Name,Gate #
+ */
+const SITE_DATA_CSV = `
+Line,Site ID,Site Name,Gate #
+A,144,Firestone,00605
+A,144,Firestone,00606
+A,144,Firestone,00608
+A,144,Firestone,00609
+A,145,Willowbrook - Rosa Parks,00333
+A,145,Willowbrook - Rosa Parks,00334
+A,145,Willowbrook - Rosa Parks,00335
+A,145,Willowbrook - Rosa Parks,00337
+A,145,Willowbrook - Rosa Parks,00340
+A,145,Willowbrook - Rosa Parks,00342
+A,145,Willowbrook - Rosa Parks,00343
+A,145,Willowbrook - Rosa Parks,00345
+A,145,Willowbrook - Rosa Parks,00346
+A,145,Willowbrook - Rosa Parks,00349
+A,145,Willowbrook - Rosa Parks,00350
+A,145,Willowbrook - Rosa Parks,00351
+A,145,Willowbrook - Rosa Parks,00353
+A,145,Willowbrook - Rosa Parks,00357
+A,145,Willowbrook - Rosa Parks,00358
+A,145,Willowbrook - Rosa Parks,00450
+A,145,Willowbrook - Rosa Parks,00451
+A,145,Willowbrook - Rosa Parks,00452
+A,145,Willowbrook - Rosa Parks,00453
+A,145,Willowbrook - Rosa Parks,00454
+A,145,Willowbrook - Rosa Parks,00455
+A,145,Willowbrook - Rosa Parks,00456
+A,145,Willowbrook - Rosa Parks,00458
+A,145,Willowbrook - Rosa Parks,00459
+A,145,Willowbrook - Rosa Parks,00460
+A,167,Lake,00508
+A,167,Lake,00510
+A,168,Allen,00505
+A,168,Allen,00506
+A,168,Allen,00507
+A,2975,Glendora,00462
+A,2975,Glendora,00463
+A,2975,Glendora,00466
+A,2975,Glendora,00467
+A,2976,San Dimas,00470
+A,2976,San Dimas,00471
+A,2977,La Verne,00478
+A,2977,La Verne,00479
+A,2977,La Verne,00482
+A,2977,La Verne,00483
+A,2978,Pomona,00486
+A,2978,Pomona,00487
+A,2978,Pomona,00488
+A,2978,Pomona,00489
+A,2978,Pomona,00490
+A,2978,Pomona,00493
+A,2978,Pomona,00494
+A,2978,Pomona,00497
+A,2978,Pomona,00498
+B,104,Westlake/MacArthur Park,00901
+B,104,Westlake/MacArthur Park,00902
+B,104,Westlake/MacArthur Park,00903
+B,104,Westlake/MacArthur Park,00904
+B,104,Westlake/MacArthur Park,00905
+B,104,Westlake/MacArthur Park,00906
+B,104,Westlake/MacArthur Park,00907
+B,104,Westlake/MacArthur Park,00908
+B,104,Westlake/MacArthur Park,00909
+B,104,Westlake/MacArthur Park,00910
+B,120,North Hollywood,00154
+B,120,North Hollywood,00155
+B,120,North Hollywood,00156
+B,120,North Hollywood,00157
+B,120,North Hollywood,00158
+B,120,North Hollywood,00161
+B,120,North Hollywood,00162
+B,120,North Hollywood,00163
+B,120,North Hollywood,00164
+B,120,North Hollywood,00165
+B,120,North Hollywood,00166
+B,123,Pershing Square,00035
+B,123,Pershing Square,00036
+B,123,Pershing Square,00037
+B,123,Pershing Square,00038
+B,123,Pershing Square,00039
+B,123,Pershing Square,00040
+B,123,Pershing Square,00041
+B,123,Pershing Square,00043
+B,123,Pershing Square,00044
+B,123,Pershing Square,00045
+B,123,Pershing Square,00046
+B,123,Pershing Square,00047
+B,124,7th Street/Metro Center,00049
+B,124,7th Street/Metro Center,00050
+B,124,7th Street/Metro Center,00051
+B,124,7th Street/Metro Center,00052
+B,124,7th Street/Metro Center,00054
+B,124,7th Street/Metro Center,00055
+B,124,7th Street/Metro Center,00056
+B,124,7th Street/Metro Center,00057
+B,124,7th Street/Metro Center,00059
+B,124,7th Street/Metro Center,00060
+B,124,7th Street/Metro Center,00061
+B,124,7th Street/Metro Center,00062
+B,124,7th Street/Metro Center,00064
+B,124,7th Street/Metro Center,00065
+B,124,7th Street/Metro Center,00066
+B,124,7th Street/Metro Center,00067
+B,124,7th Street/Metro Center,00069
+B,124,7th Street/Metro Center,00070
+B,124,7th Street/Metro Center,00071
+B,125,Wilshire/Vermont,00087
+B,125,Wilshire/Vermont,00088
+B,125,Wilshire/Vermont,00089
+B,125,Wilshire/Vermont,00090
+B,125,Wilshire/Vermont,00091
+B,125,Wilshire/Vermont,00095
+B,125,Wilshire/Vermont,00096
+B,129,Vermont/Santa Monica,00104
+B,129,Vermont/Santa Monica,00105
+B,129,Vermont/Santa Monica,00106
+B,129,Vermont/Santa Monica,00107
+B,129,Vermont/Santa Monica,00110
+B,129,Vermont/Santa Monica,00111
+B,131,Hollywood/Western,00112
+B,131,Hollywood/Western,00124
+B,131,Hollywood/Western,00125
+B,131,Hollywood/Western,00126
+B,131,Hollywood/Western,00127
+B,131,Hollywood/Western,00128
+B,122,Civic Center,00026
+B,122,Civic Center,00027
+B,122,Civic Center,00028
+B,122,Civic Center,00029
+B,122,Civic Center,00030
+B,122,Civic Center,00031
+B,122,Civic Center,00032
+B,122,Civic Center,00911
+B,122,Civic Center,00912
+B,122,Civic Center,00913
+K,2941,LAX/MTC,00206
+K,2941,LAX/MTC,00207
+K,2941,LAX/MTC,00208
+K,2941,LAX/MTC,00209
+K,2941,LAX/MTC,00210
+K,2941,LAX/MTC,00211
+K,2941,LAX/MTC,00213
+K,2941,LAX/MTC,00214
+K,2941,LAX/MTC,00215
+K,2941,LAX/MTC,00216
+K,2941,LAX/MTC,00217
+K,2941,LAX/MTC,00218
+K,171,Dougls,00436
+K,171,Dougls,00437
+K,171,Dougls,00438
+K,171,Dougls,00439
+K,171,Dougls,00530
+K,171,Dougls,00531
+K,171,Dougls,00440
+K,171,Dougls,00441
+K,171,Dougls,00442
+K,171,Dougls,00475
+K,171,Dougls,00476
+C,174,Aviation/Imperial,00411
+C,174,Aviation/Imperial,00412
+C,174,Aviation/Imperial,00413
+C,174,Aviation/Imperial,00415
+C,174,Aviation/Imperial,00416
+C,174,Aviation/Imperial,00417
+C,174,Aviation/Imperial,00472
+C,174,Aviation/Imperial,00474
+C,60,Norwalk,00307
+C,60,Norwalk,00308
+C,60,Norwalk,00532
+C,60,Norwalk,00533
+C,60,Norwalk,00534
+C,60,Norwalk,00535
+C,60,Norwalk,00300
+C,60,Norwalk,00301
+C,60,Norwalk,00302
+C,60,Norwalk,00303
+C,60,Norwalk,00304
+C,60,Norwalk,00305
+D,2986,Wilshire/La Brea,00184
+D,2986,Wilshire/La Brea,00185
+D,2986,Wilshire/La Brea,00186
+D,2986,Wilshire/La Brea,00187
+D,2987,Wilshire/Fairfax,00190
+D,2987,Wilshire/Fairfax,00191
+D,2987,Wilshire/Fairfax,00192
+D,2987,Wilshire/Fairfax,00193
+D,2988,Wilshire/La Cienega,00916
+D,2988,Wilshire/La Cienega,00917
+D,2988,Wilshire/La Cienega,00918
+D,2988,Wilshire/La Cienega,00919
+D,2988,Wilshire/La Cienega,00920
+D,2988,Wilshire/La Cienega,00921
+D,2988,Wilshire/La Cienega,00922
+A,73,Sierra Madre Villa,00500	
+A,73,Sierra Madre Villa,00501
+A,73,Sierra Madre Villa,00502
+A,73,Sierra Madre Villa,00503
+A,73,Sierra Madre Villa,00536
+`.trim();
+
+// CC groups (defaults)
+const CC_GROUPS = {
+  nexien: [
+    "wilson.h@nexien.com","revic.c@nexien.com","john.h@nexien.com","abram.g@nexien.com","gunsuk.y@nexien.com",
+    "charles.l@nexien.com","jimmy.z@nexien.com","bok.l@nexien.com","jose.j@nexien.com","juan.h@nexien.com",
+    "roger.d@nexien.com","pablo.a@nexien.com","devon.j@nexien.com","asanti.h@nexien.com","rafael.t@nexien.com",
+    "francisco.l@nexien.com","joshua.a@nexien.com","aijaz.s@nexien.com","julio.m@nexien.com","hector.m@nexien.com",
+    "julio.n@nexien.com","demetrius.h@nexien.com"
+  ],
+  metro: ["JacksonKA@metro.net","villanuevar@metro.net","AlmedaL@metro.net","NangleC@metro.net"],
+  straffic: [
+    "kihyun38@straffic.co.kr","jelee127@straffic.co.kr","twinsi@straffic.co.kr","jwyoo@straffic.co.kr",
+    "shsong@straffic.co.kr","yssong@straffic.co.kr","yosep.choi@straffic.com","jeonsoyoung0612@straffic.co.kr",
+    "jaeiklee@straffic.co.kr","juyoung.lee@straffic.co.kr"
+  ],
+  cubic: ["ladispatch@cubic.com","Manuel.Salinas@cubic.com","Allan.Lee@cubic.com","Nestor.Gonzalez@cubic.com"]
+};
+
+const GROUP_META = [
+  { key:"nexien",  label:"Nexien",  desc:"Internal team" },
+  { key:"metro",   label:"Metro",   desc:"Metro" },
+  { key:"straffic",label:"STraffic",desc:"STraffic contacts" },
+  { key:"cubic",   label:"Cubic",   desc:"Cubic dispatch/support" }
+];
+
+// Stores add/remove/disabled per group (local only)
+const customGroupsKey = "fairgate_cc_groups_custom_v1";
+
+function normalizeEmailList(s){
+  return (s || "")
+    .split(/[,;\n]+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+function uniqueEmails(list){
+  const seen = new Set();
+  const out = [];
+  for(const e of list){
+    const key = e.toLowerCase();
+    if(!seen.has(key)){
+      seen.add(key);
+      out.push(e);
+    }
+  }
+  return out;
+}
+function isValidEmail(e){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e||"").trim());
+}
+
+function loadCustomGroups(){
+  try { return JSON.parse(localStorage.getItem(customGroupsKey) || "{}"); }
+  catch { return {}; }
+}
+function saveCustomGroups(obj){
+  localStorage.setItem(customGroupsKey, JSON.stringify(obj));
+}
+function ensureCustomGroup(custom, groupKey){
+  custom[groupKey] ||= { added: [], removed: [], disabled: [] };
+  custom[groupKey].added ||= [];
+  custom[groupKey].removed ||= [];
+  custom[groupKey].disabled ||= [];
+}
+
+function getEffectiveGroup(groupKey){
+  const custom = loadCustomGroups();
+  ensureCustomGroup(custom, groupKey);
+
+  const base = (CC_GROUPS[groupKey] || []).slice();
+  const added = custom[groupKey].added;
+  const removed = new Set(custom[groupKey].removed.map(e=>e.toLowerCase()));
+  const disabled = new Set(custom[groupKey].disabled.map(e=>e.toLowerCase()));
+
+  let merged = uniqueEmails([...base, ...added])
+    .filter(e => !removed.has(e.toLowerCase()))
+    .sort((a,b)=>a.localeCompare(b));
+
+  return { merged, disabled };
+}
+
+function setEmailDisabled(groupKey, email, disabledBool){
+  const custom = loadCustomGroups();
+  ensureCustomGroup(custom, groupKey);
+
+  const low = email.toLowerCase();
+  const arr = custom[groupKey].disabled;
+
+  const exists = arr.some(x=>x.toLowerCase()===low);
+  if(disabledBool && !exists) arr.push(email);
+  if(!disabledBool && exists) custom[groupKey].disabled = arr.filter(x=>x.toLowerCase()!==low);
+
+  saveCustomGroups(custom);
+}
+
+function addEmailToGroup(groupKey, email){
+  const e = (email || "").trim();
+  if(!e || !isValidEmail(e)) return false;
+
+  const custom = loadCustomGroups();
+  ensureCustomGroup(custom, groupKey);
+
+  // un-remove if present
+  custom[groupKey].removed = custom[groupKey].removed.filter(x=>x.toLowerCase()!==e.toLowerCase());
+
+  // add if missing
+  if(!custom[groupKey].added.some(x=>x.toLowerCase()===e.toLowerCase())){
+    custom[groupKey].added.push(e);
+  }
+
+  // enable it by default
+  custom[groupKey].disabled = custom[groupKey].disabled.filter(x=>x.toLowerCase()!==e.toLowerCase());
+
+  saveCustomGroups(custom);
+  return true;
+}
+
+function removeEmailFromGroup(groupKey, email){
+  const e = (email || "").trim();
+  if(!e) return;
+
+  const custom = loadCustomGroups();
+  ensureCustomGroup(custom, groupKey);
+
+  // if it was added, drop it
+  custom[groupKey].added = custom[groupKey].added.filter(x=>x.toLowerCase()!==e.toLowerCase());
+
+  // mark removed so it won't appear even if in defaults
+  if(!custom[groupKey].removed.some(x=>x.toLowerCase()===e.toLowerCase())){
+    custom[groupKey].removed.push(e);
+  }
+
+  // remove from disabled list
+  custom[groupKey].disabled = custom[groupKey].disabled.filter(x=>x.toLowerCase()!==e.toLowerCase());
+
+  saveCustomGroups(custom);
+}
+
+function resetGroupCustomizations(groupKey){
+  const custom = loadCustomGroups();
+  delete custom[groupKey];
+  saveCustomGroups(custom);
+}
+
+/** Populate To-primary datalist with ALL known emails (defaults + custom adds, minus custom removes) */
+function populateToEmailDatalist(){
+  const all = [];
+  for(const g of GROUP_META){
+    const { merged } = getEffectiveGroup(g.key);
+    all.push(...merged);
+  }
+  const uniqueSorted = uniqueEmails(all).sort((a,b)=>a.localeCompare(b));
+
+  const dl = $("toEmails");
+  dl.innerHTML = "";
+  for(const email of uniqueSorted){
+    const opt = document.createElement("option");
+    opt.value = email;
+    dl.appendChild(opt);
+  }
+}
+
+function computeCC(){
+  const selected = [];
+
+  for(const g of GROUP_META){
+    const cb = $("ccg_" + g.key);
+    if(cb && cb.checked){
+      const { merged, disabled } = getEffectiveGroup(g.key);
+      for(const email of merged){
+        if(!disabled.has(email.toLowerCase())) selected.push(email);
+      }
+    }
+  }
+
+  const manual = normalizeEmailList($("ccManual").value);
+  const finalList = uniqueEmails([...selected, ...manual]);
+  const ccStr = finalList.join(", ");
+  $("ccComputed").value = ccStr;
+  return ccStr;
+}
+
+function updateGroupBadges(){
+  for(const g of GROUP_META){
+    const badge = $("count_" + g.key);
+    if(!badge) continue;
+    const { merged, disabled } = getEffectiveGroup(g.key);
+    const enabledCount = merged.filter(e=>!disabled.has(e.toLowerCase())).length;
+    badge.textContent = `${enabledCount}/${merged.length} enabled`;
+  }
+}
+
+function renderCCGroupsUI(){
+  const host = $("ccGroupsUI");
+  host.innerHTML = "";
+
+  const grid = document.createElement("div");
+  grid.className = "checkgrid";
+
+  for(const g of GROUP_META){
+    const { merged, disabled } = getEffectiveGroup(g.key);
+
+    const det = document.createElement("details");
+    det.className = "ccDetails";
+
+    const sum = document.createElement("summary");
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = "ccg_" + g.key;
+    cb.style.marginTop = "2px";
+    cb.addEventListener("click", ev => ev.stopPropagation());
+    cb.addEventListener("change", () => { computeCC(); });
+
+    const sumContent = document.createElement("div");
+    sumContent.innerHTML = `
+      <div><b>${g.label}</b> <span class="badge" id="count_${g.key}"></span></div>
+      <div class="small">${g.desc}</div>
+    `;
+
+    sum.appendChild(cb);
+    sum.appendChild(sumContent);
+
+    const body = document.createElement("div");
+    body.className = "detailsBody";
+
+    const tools = document.createElement("div");
+    tools.className = "groupTools";
+    tools.innerHTML = `
+      <input id="add_${g.key}" placeholder="Add email to ${g.label}…">
+      <button type="button" class="primary" id="addBtn_${g.key}">Add</button>
+      <button type="button" class="warn" id="resetBtn_${g.key}">Reset</button>
+    `;
+    body.appendChild(tools);
+
+    const listWrap = document.createElement("div");
+    listWrap.style.display = "grid";
+    listWrap.style.gap = "8px";
+
+    for(const email of merged){
+      const row = document.createElement("div");
+      row.className = "emailRow";
+
+      const ecb = document.createElement("input");
+      ecb.type = "checkbox";
+      ecb.checked = !disabled.has(email.toLowerCase());
+      ecb.title = "Include this email when the group is checked";
+
+      const txt = document.createElement("div");
+      txt.className = "emailText";
+      txt.textContent = email;
+      txt.title = email;
+
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "warn";
+      rm.textContent = "Remove";
+
+      ecb.addEventListener("change", ()=>{
+        setEmailDisabled(g.key, email, !ecb.checked);
+        computeCC();
+        updateGroupBadges();
+        populateToEmailDatalist();
+      });
+
+      rm.addEventListener("click", ()=>{
+        removeEmailFromGroup(g.key, email);
+        renderCCGroupsUI();
+        loadPrefs();
+        computeCC();
+        updateGroupBadges();
+        populateToEmailDatalist();
+      });
+
+      row.appendChild(ecb);
+      row.appendChild(txt);
+      row.appendChild(rm);
+      listWrap.appendChild(row);
+    }
+
+    body.appendChild(listWrap);
+    det.appendChild(sum);
+    det.appendChild(body);
+    grid.appendChild(det);
+
+    setTimeout(() => {
+      const addInp = $("add_" + g.key);
+      const addBtn = $("addBtn_" + g.key);
+      const resetBtn = $("resetBtn_" + g.key);
+
+      addBtn.onclick = () => {
+        const ok = addEmailToGroup(g.key, addInp.value);
+        if(!ok){
+          setStatus("prefStatus", "Invalid email.", "err");
+          return;
+        }
+        addInp.value = "";
+        renderCCGroupsUI();
+        loadPrefs();
+        computeCC();
+        updateGroupBadges();
+        populateToEmailDatalist();
+        setStatus("prefStatus", "Added email to group.", "ok");
+      };
+
+      resetBtn.onclick = () => {
+        resetGroupCustomizations(g.key);
+        renderCCGroupsUI();
+        loadPrefs();
+        computeCC();
+        updateGroupBadges();
+        populateToEmailDatalist();
+        setStatus("prefStatus", "Group reset to defaults.", "ok");
+      };
+    }, 0);
+  }
+
+  host.appendChild(grid);
+  updateGroupBadges();
+}
+
+function setStatus(id, msg, kind){
+  const el = $(id);
+  el.textContent = msg || "";
+  el.className = "status " + (kind || "");
+}
+
+function buildFooter(){
+  const name = ($("sigName").value || "").trim() || "Your Name";
+  return [
+    "",
+    "Thank you,",
+    name,
+    "Faregate Helpdesk",
+    "helpdesk@nexien.com",
+    "Online Service Request Form (Required) URL: http://bit.ly/474taFL",
+    "Phone: 1-866-703-9866"
+  ].join("\n");
+}
+
+function savePrefs(){
+  const groups = {};
+  for(const g of GROUP_META){
+    const cb = $("ccg_" + g.key);
+    groups[g.key] = !!(cb && cb.checked);
+  }
+
+  localStorage.setItem(prefsKey, JSON.stringify({
+    sigName: $("sigName").value.trim(),
+    to: $("toAddr").value.trim(),
+    ccManual: $("ccManual").value.trim(),
+    groups
+  }));
+  setStatus("prefStatus", "Saved.", "ok");
+}
+
+function loadPrefs(){
+  const p = JSON.parse(localStorage.getItem(prefsKey) || "{}");
+  $("sigName").value = p.sigName || "";
+  $("toAddr").value = p.to || "";
+  $("ccManual").value = p.ccManual || "";
+
+  const g = p.groups || {};
+  for(const meta of GROUP_META){
+    const cb = $("ccg_" + meta.key);
+    if(cb) cb.checked = !!g[meta.key];
+  }
+
+  computeCC();
+  updateGroupBadges();
+}
+
+function clearPrefs(){
+  localStorage.removeItem(prefsKey);
+
+  $("sigName").value = "";
+  $("toAddr").value = "";
+  $("ccManual").value = "";
+
+  for(const meta of GROUP_META){
+    const cb = $("ccg_" + meta.key);
+    if(cb) cb.checked = false;
+  }
+
+  computeCC();
+  updateGroupBadges();
+  setStatus("prefStatus", "Cleared.", "ok");
+}
+
+function gmailCompose(to, cc, subject, body){
+  const p = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+    su: subject || "",
+    body: body || "",
+    authuser: HELP_DESK
+  });
+  if (to) p.set("to", to);
+  if (cc) p.set("cc", cc);
+  return "https://mail.google.com/mail/?" + p.toString();
+}
+function gmailInbox(){
+  const p = new URLSearchParams({ authuser: HELP_DESK });
+  return "https://mail.google.com/mail/?" + p.toString();
+}
+
+function parseMDYHM(s){
+  const t = (s || "").trim();
+  if(!t) return null;
+  const m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/);
+  if(!m) return null;
+  const mm = Number(m[1]), dd = Number(m[2]), yyyy = Number(m[3]);
+  const HH = Number(m[4]), MI = Number(m[5]);
+  const d = new Date(yyyy, mm-1, dd, HH, MI, 0, 0);
+  if(Number.isNaN(d.getTime())) return null;
+  return d;
+}
+function formatDuration(ms){
+  if(ms == null || ms < 0) return "";
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+async function copyText(txt){
+  try {
+    await navigator.clipboard.writeText(txt);
+    setStatus("actionStatus", "Copied.", "ok");
+  } catch(e){
+    setStatus("actionStatus", "Copy blocked by browser. Try a different browser or use HTTPS.", "err");
+  }
+}
+
+function normalizeGateNumber(val){
+  const t = (val || "").trim();
+  if(!t) return "";
+  if(/^\d+$/.test(t)) return String(Number(t));
+  return t;
+}
+
+function nowStamp(){
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  const HH = String(d.getHours()).padStart(2,"0");
+  const MI = String(d.getMinutes()).padStart(2,"0");
+  return `${mm}/${dd}/${yyyy} ${HH}:${MI}`;
+}
+
+function buildAllRecipientsString(){
+  const to = ($("toAddr").value || "").trim();
+  const cc = computeCC();
+  const list = uniqueEmails([...normalizeEmailList(to), ...normalizeEmailList(cc)]);
+  return list.join(", ");
+}
+
+/** ---------- Station/Gate filtering ---------- **/
+let stationIndex = new Map();
+
+function parseSites(){
+  const lines = SITE_DATA_CSV.split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("Line,"));
+  stationIndex = new Map();
+
+  for(const row of lines){
+    const parts = row.split(",").map(x => x.trim());
+    if(parts.length < 4) continue;
+    const [line, siteId, station, gate] = parts;
+
+    if(!stationIndex.has(station)){
+      stationIndex.set(station, { line, siteId, gates: [] });
+    }
+    stationIndex.get(station).gates.push(gate);
+  }
+
+  for(const [station, obj] of stationIndex.entries()){
+    obj.gates = Array.from(new Set(obj.gates)).sort((a,b)=>Number(a)-Number(b));
+  }
+}
+
+function populateStationDatalist(){
+  const dl = $("stations");
+  dl.innerHTML = "";
+  const stations = Array.from(stationIndex.keys()).sort((a,b)=>a.localeCompare(b));
+  for(const st of stations){
+    const opt = document.createElement("option");
+    opt.value = st;
+    dl.appendChild(opt);
+  }
+}
+
+function setGatesForStation(station){
+  const gatesDL = $("gates");
+  gatesDL.innerHTML = "";
+
+  const info = stationIndex.get(station);
+  if(!info){
+    $("lineOut").textContent = "—";
+    $("siteOut").textContent = "—";
+    $("gateCountOut").textContent = "0";
+    return;
+  }
+
+  $("lineOut").textContent = info.line;
+  $("siteOut").textContent = info.siteId;
+  $("gateCountOut").textContent = String(info.gates.length);
+
+  for(const g of info.gates){
+    const opt = document.createElement("option");
+    opt.value = g;
+    gatesDL.appendChild(opt);
+  }
+}
+
+/** ---------- Build outputs ---------- **/
+function build(){
+  const footer = buildFooter();
+
+  const station = $("station").value.trim();
+  const fgid = normalizeGateNumber($("fgid").value.trim());
+  const ticketIdRaw = $("ticketId").value.trim();
+  const issue = $("issue").value.trim();
+  const actions = $("actions").value.trim();
+  const status = $("statusSel").value;
+  const cause = $("cause").value.trim();
+  const tech = $("tech").value;
+
+  const ticket = ticketIdRaw ? `FM-${ticketIdRaw}` : "";
+
+  const dtIncidentTxt = $("dtReported").value.trim();
+  const dtReceivedTxt = $("dtDispatch").value.trim();
+  const dtRepairTxt   = $("dtArrival").value.trim();
+
+  const dtReceived = parseMDYHM(dtReceivedTxt);
+  const dtRepair   = parseMDYHM(dtRepairTxt);
+  const duration = (dtReceived && dtRepair) ? formatDuration(dtRepair.getTime() - dtReceived.getTime()) : "";
+
+  if(!station || !fgid || !ticket || !issue){
+    setStatus("buildStatus", "Fill Station Name, Gate #, Ticket ID (FM-), and Issue Details.", "err");
+  } else {
+    setStatus("buildStatus", "Built outputs.", "ok");
+  }
+
+  const dispSub = `Service Dispatched "${station || "Station Name"}" – ${fgid || "FG ID"} – ${ticket || "Ticket ID"}`;
+  const dispBody = [
+    "Service Dispatched",
+    "",
+    `TICKET ID: ${ticket}`,
+    `STATION NAME: ${station}`,
+    `FAREGATE ID: ${fgid}`,
+    `ISSUE DETAILS: ${issue}`,
+    `ACTIONS TAKEN: ${actions}`,
+    `FAREGATE STATUS: ${status}`,
+    `CAUSE (IF KNOWN): ${cause}`,
+    footer
+  ].join("\n");
+
+  const closeSub = `Ticket Closed – ${station || "Station"} – ${fgid || "FG"} – ${ticket || "Ticket"}`;
+  const closeBody = [
+    "Ticket Closed",
+    "",
+    `TICKET ID: ${ticket}`,
+    `STATION NAME: ${station}`,
+    `FAREGATE ID: ${fgid}`,
+    `ISSUE DETAILS: ${issue}`,
+    `ACTIONS TAKEN: ${actions}`,
+    `FAREGATE STATUS: ${status}`,
+    `CAUSE: ${cause}`,
+    `TECHNICIAN: ${tech}`,
+    footer
+  ].join("\n");
+
+  const type = "Corrective";
+  const dailyCols = [
+    station,
+    dtIncidentTxt,
+    dtReceivedTxt,
+    dtRepairTxt,
+    duration,
+    fgid,
+    issue,
+    status,
+    tech,
+    type,
+    actions
+  ];
+  const trailingBlanks = 12;
+  for(let i=0;i<trailingBlanks;i++) dailyCols.push("");
+  const dailyLine = dailyCols.join("\t");
+
+  $("dispatchPreview").textContent = `Subject: ${dispSub}\n\n${dispBody}`;
+  $("closedPreview").textContent = `Subject: ${closeSub}\n\n${closeBody}`;
+  $("dailyPreview").textContent = dailyLine;
+
+  const to = ($("toAddr").value || "").trim();
+  const cc = computeCC();
+
+  $("openDispatch").onclick = () => {
+    if(!to && !cc){
+      setStatus("actionStatus", "Add at least one recipient (Primary or CC).", "err");
+      return;
+    }
+    window.open(gmailCompose(to, cc, dispSub, dispBody), "_blank");
+  };
+  $("openClosed").onclick = () => {
+    if(!to && !cc){
+      setStatus("actionStatus", "Add at least one recipient (Primary or CC).", "err");
+      return;
+    }
+    window.open(gmailCompose(to, cc, closeSub, closeBody), "_blank");
+  };
+
+  $("copyDispatch").onclick = () => copyText($("dispatchPreview").textContent || "");
+  $("copyClosed").onclick = () => copyText($("closedPreview").textContent || "");
+  $("copyDaily").onclick = () => copyText(dailyLine);
+}
+
+/** ---------- Events ---------- **/
+$("ccManual").addEventListener("change", computeCC);
+$("ccManual").addEventListener("input", computeCC);
+
+$("station").addEventListener("input", () => setGatesForStation($("station").value.trim()));
+$("station").addEventListener("change", () => setGatesForStation($("station").value.trim()));
+
+$("fgid").addEventListener("change", () => { $("fgid").value = normalizeGateNumber($("fgid").value); });
+$("fgid").addEventListener("blur",   () => { $("fgid").value = normalizeGateNumber($("fgid").value); });
+
+$("copyRecipientsTop").onclick = () => {
+  const all = buildAllRecipientsString();
+  if(!all){
+    setStatus("prefStatus", "No recipients to copy yet (set Primary and/or CC).", "err");
+    return;
+  }
+  copyText(all);
+};
+
+$("nowIncident").onclick = () => { $("dtReported").value = nowStamp(); };
+$("nowReceived").onclick = () => { $("dtDispatch").value = nowStamp(); };
+$("nowRepair").onclick = () => { $("dtArrival").value = nowStamp(); };
+
+$("savePrefs").onclick = savePrefs;
+$("loadPrefs").onclick = () => { loadPrefs(); setStatus("prefStatus", "Reloaded.", "ok"); };
+$("clearPrefs").onclick = clearPrefs;
+
+$("openHelpdesk").onclick = () => window.open(gmailInbox(), "_blank");
+$("build").onclick = build;
+
+$("clearFields").onclick = () => {
+  ["station","fgid","ticketId","dtReported","dtDispatch","dtArrival","issue","actions","cause"].forEach(id => $(id).value = "");
+  $("tech").value = "";
+  $("statusSel").value = "";
+  $("dispatchPreview").textContent = "";
+  $("closedPreview").textContent = "";
+  $("dailyPreview").textContent = "";
+  $("lineOut").textContent = "—";
+  $("siteOut").textContent = "—";
+  $("gateCountOut").textContent = "0";
+  $("gates").innerHTML = "";
+  setStatus("buildStatus", "Cleared ticket fields.", "ok");
+  setStatus("actionStatus", "", "");
+};
+
+/** ---------- Init ---------- **/
+parseSites();
+populateStationDatalist();
+renderCCGroupsUI();
+loadPrefs();
+computeCC();
+updateGroupBadges();
+populateToEmailDatalist();
+setGatesForStation($("station").value.trim());
+</script>
+</body>
+</html>
