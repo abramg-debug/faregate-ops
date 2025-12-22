@@ -86,14 +86,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace}
 @media(min-width:900px){
   .checkgrid{grid-template-columns: repeat(4, minmax(0,1fr));}
 }
-.check{
-  display:flex; gap:8px; align-items:flex-start;
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:10px 10px;
-  background:rgba(255,255,255,.02);
-}
-.check input{width:auto; margin-top:2px}
 .badge{
   display:inline-block;
   font-size:11px;
@@ -157,24 +149,36 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
   margin-bottom:10px;
 }
 .groupTools input{flex:1}
+
+/* Email rows: table-like, readable, wraps cleanly (Option B) */
 .emailRow{
-  display:flex;
-  gap:8px;
-  align-items:center;
+  display:grid;
+  grid-template-columns: 22px 1fr auto;
+  gap:10px;
+  align-items:start;
   border:1px solid var(--border);
   border-radius:12px;
   padding:8px 10px;
   background:rgba(255,255,255,.02);
 }
+.emailRow input[type="checkbox"]{
+  width:auto;
+  margin:0;
+}
 .emailRow .emailText{
-  flex:1;
   font-size:12px;
-  word-break:break-all;
+  line-height:1.25;
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  min-width:0;
 }
 .emailRow button{
+  white-space:nowrap;
   padding:8px 10px;
   border-radius:12px;
 }
+
 .mini{
   font-size:11px;
   color:var(--muted);
@@ -223,8 +227,6 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
   </div>
 
   <label style="margin-top:14px">CC Groups (click a group to expand)</label>
-
-  <!-- NEW: expandable CC groups render here -->
   <div id="ccGroupsUI"></div>
 
   <label style="margin-top:14px">Computed CC (preview)</label>
@@ -235,11 +237,12 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
     <button class="primary" id="savePrefs">Save</button>
     <button id="loadPrefs">Reload</button>
     <button class="warn" id="clearPrefs">Clear</button>
+    <button class="good" id="copyRecipientsTop">Copy All Recipients (To + CC)</button>
   </div>
   <div id="prefStatus" class="status"></div>
 
   <div class="mini">
-    Notes: Group edits (disable/add/remove) are saved locally in this browser (localStorage). Nothing is sent anywhere.
+    Notes: Group edits (disable/add/remove/reset) are saved locally in this browser (localStorage). Nothing is sent anywhere.
   </div>
 </div>
 
@@ -380,10 +383,6 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
   <div id="dailyPreview" class="preview"></div>
   <div class="btns">
     <button class="good" id="copyDaily">Copy Daily Line (tabs)</button>
-  </div>
-
-  <div class="btns">
-    <button class="good" id="copyRecipients">Copy All Recipients (To + CC)</button>
   </div>
 
   <div id="actionStatus" class="status"></div>
@@ -802,15 +801,13 @@ function renderCCGroupsUI(){
 
     const sum = document.createElement("summary");
 
-    // master checkbox
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.id = "ccg_" + g.key;
     cb.style.marginTop = "2px";
-    cb.addEventListener("click", ev => ev.stopPropagation()); // don't toggle details when clicking checkbox
+    cb.addEventListener("click", ev => ev.stopPropagation());
     cb.addEventListener("change", () => { computeCC(); });
 
-    // summary content
     const sumContent = document.createElement("div");
     sumContent.innerHTML = `
       <div><b>${g.label}</b> <span class="badge" id="count_${g.key}"></span></div>
@@ -823,7 +820,6 @@ function renderCCGroupsUI(){
     const body = document.createElement("div");
     body.className = "detailsBody";
 
-    // Add + Reset row
     const tools = document.createElement("div");
     tools.className = "groupTools";
     tools.innerHTML = `
@@ -849,6 +845,7 @@ function renderCCGroupsUI(){
       const txt = document.createElement("div");
       txt.className = "emailText";
       txt.textContent = email;
+      txt.title = email;
 
       const rm = document.createElement("button");
       rm.type = "button";
@@ -865,7 +862,7 @@ function renderCCGroupsUI(){
       rm.addEventListener("click", ()=>{
         removeEmailFromGroup(g.key, email);
         renderCCGroupsUI();
-        loadPrefs(); // re-apply saved checkbox states
+        loadPrefs();
         computeCC();
         updateGroupBadges();
         populateToEmailDatalist();
@@ -880,13 +877,8 @@ function renderCCGroupsUI(){
     body.appendChild(listWrap);
     det.appendChild(sum);
     det.appendChild(body);
-
-    // wire add/reset after insertion
-    det.addEventListener("toggle", ()=>{}); // keeps details interactive; no-op
-
     grid.appendChild(det);
 
-    // after added to DOM
     setTimeout(() => {
       const addInp = $("add_" + g.key);
       const addBtn = $("addBtn_" + g.key);
@@ -999,7 +991,7 @@ function gmailCompose(to, cc, subject, body){
     body: body || "",
     authuser: HELP_DESK
   });
-  if (to) p.set("to", to); // optional
+  if (to) p.set("to", to);
   if (cc) p.set("cc", cc);
   return "https://mail.google.com/mail/?" + p.toString();
 }
@@ -1039,7 +1031,6 @@ async function copyText(txt){
 function normalizeGateNumber(val){
   const t = (val || "").trim();
   if(!t) return "";
-  // Keep your existing behavior (do not force padding here)
   if(/^\d+$/.test(t)) return String(Number(t));
   return t;
 }
@@ -1233,10 +1224,10 @@ $("station").addEventListener("change", () => setGatesForStation($("station").va
 $("fgid").addEventListener("change", () => { $("fgid").value = normalizeGateNumber($("fgid").value); });
 $("fgid").addEventListener("blur",   () => { $("fgid").value = normalizeGateNumber($("fgid").value); });
 
-$("copyRecipients").onclick = () => {
+$("copyRecipientsTop").onclick = () => {
   const all = buildAllRecipientsString();
   if(!all){
-    setStatus("actionStatus", "No recipients to copy yet (set Primary and/or CC).", "err");
+    setStatus("prefStatus", "No recipients to copy yet (set Primary and/or CC).", "err");
     return;
   }
   copyText(all);
@@ -1271,11 +1262,8 @@ $("clearFields").onclick = () => {
 /** ---------- Init ---------- **/
 parseSites();
 populateStationDatalist();
-
-// NEW: build expandable CC groups, then load prefs (so checkboxes exist)
 renderCCGroupsUI();
 loadPrefs();
-
 computeCC();
 updateGroupBadges();
 populateToEmailDatalist();
