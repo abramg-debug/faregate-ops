@@ -37,7 +37,7 @@ input,textarea,select{
   color:var(--text);
   padding:10px 12px;
 }
-textarea{min-height:90px;resize:vertical}
+textarea{min-height:120px;resize:vertical}
 .row{display:grid;gap:12px}
 .row.two{grid-template-columns:1fr 1fr}
 .row.three{grid-template-columns:1fr 1fr 1fr}
@@ -241,8 +241,21 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
   </div>
   <div id="prefStatus" class="status"></div>
 
+  <!-- Paste Smartsheet Row -->
+  <div style="margin-top:14px">
+    <label>Paste Smartsheet Row (auto-fill)</label>
+    <textarea id="pasteRow" placeholder="Paste the Smartsheet row details here…"></textarea>
+    <div class="btns">
+      <button class="primary" id="parsePaste">Parse + Fill Form</button>
+      <button id="clearPaste" type="button">Clear Paste</button>
+    </div>
+    <div class="small" style="margin-top:6px">
+      Works with the “Row ### … Ticket ID … Station Name … Faregate No …” format (label + value per line).
+    </div>
+  </div>
+
   <div class="mini">
-    Notes: Group edits (disable/add/remove/reset) are saved locally in this browser (localStorage). Nothing is sent anywhere.
+    Notes: Group edits and pasted parsing are local-only (localStorage). Nothing is sent anywhere.
   </div>
 </div>
 
@@ -292,6 +305,7 @@ details.ccDetails > summary::-webkit-details-marker{display:none}
         <option>Devon Johnson</option>
         <option>Francisco Leal</option>
         <option>Gunsuk Yang</option>
+        <option>Jimmy Zone</option>
         <option>Jose Juarez</option>
         <option>Joshua Almeda</option>
         <option>Juan Hernandez</option>
@@ -593,11 +607,6 @@ D,2988,Wilshire/La Cienega,00919
 D,2988,Wilshire/La Cienega,00920
 D,2988,Wilshire/La Cienega,00921
 D,2988,Wilshire/La Cienega,00922
-A,73,Sierra Madre Villa,00500	
-A,73,Sierra Madre Villa,00501
-A,73,Sierra Madre Villa,00502
-A,73,Sierra Madre Villa,00503
-A,73,Sierra Madre Villa,00536
 `.trim();
 
 // CC groups (defaults)
@@ -920,6 +929,129 @@ function renderCCGroupsUI(){
   updateGroupBadges();
 }
 
+/* ---------- Smartsheet Paste Parser (label -> value lines) ---------- */
+function lastNonEmpty(parts){
+  for(let i = parts.length - 1; i >= 0; i--){
+    const t = (parts[i] || "").trim();
+    if(t) return t;
+  }
+  return "";
+}
+
+function parseSmartsheetRowText(raw){
+  const lines = (raw || "")
+    .split(/\r?\n/)
+    .map(l => l.trimEnd())
+    .filter(l => l.trim().length);
+
+  const kv = new Map();
+
+  for(const line of lines){
+    const parts = line.split("\t").map(p => p.trim());
+    if(parts.length < 2) continue;
+
+    const key = (parts[0] || "").trim();
+    const val = lastNonEmpty(parts.slice(1));
+    if(key) kv.set(key.toLowerCase(), val);
+  }
+  return kv;
+}
+
+// Converts:
+// - "12/22/25" + "5:00" -> "12/22/2025 05:00"
+// - "12/22/25, 6:22 AM" -> "12/22/2025 06:22"
+function toMDYHM(dateStr, timeStr){
+  const d = (dateStr || "").trim();
+  const t = (timeStr || "").trim();
+
+  // Case: combined "12/22/25, 6:22 AM"
+  const combined = d.includes(",") ? d : "";
+  if(combined){
+    const m = combined.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if(m){
+      let mm = m[1], dd = m[2], yy = m[3];
+      let hh = Number(m[4]), mi = m[5], ap = m[6].toUpperCase();
+      let yyyy = (yy.length === 2) ? ("20" + yy) : yy;
+
+      if(ap === "PM" && hh !== 12) hh += 12;
+      if(ap === "AM" && hh === 12) hh = 0;
+
+      return `${String(mm).padStart(2,"0")}/${String(dd).padStart(2,"0")}/${yyyy} ${String(hh).padStart(2,"0")}:${mi}`;
+    }
+  }
+
+  // Case: separate date + time
+  const md = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(!md) return "";
+  const mm = String(md[1]).padStart(2,"0");
+  const dd = String(md[2]).padStart(2,"0");
+  const yy = md[3];
+  const yyyy = (yy.length === 2) ? ("20" + yy) : yy;
+
+  // time: "5:00" or "05:00" or "6:22 AM"
+  let hh = "00", mi = "00";
+  const t12 = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const t24 = t.match(/^(\d{1,2}):(\d{2})$/);
+
+  if(t12){
+    let H = Number(t12[1]);
+    mi = t12[2];
+    const ap = t12[3].toUpperCase();
+    if(ap === "PM" && H !== 12) H += 12;
+    if(ap === "AM" && H === 12) H = 0;
+    hh = String(H).padStart(2,"0");
+  } else if(t24){
+    hh = String(Number(t24[1])).padStart(2,"0");
+    mi = t24[2];
+  }
+
+  return `${mm}/${dd}/${yyyy} ${hh}:${mi}`;
+}
+
+function fillFromSmartsheetPaste(raw){
+  const kv = parseSmartsheetRowText(raw);
+
+  const ticket = kv.get("ticket id");               // "FM-190"
+  const station = kv.get("station name");           // "Willowbrook/Rosa Parks"
+  const entrance = kv.get("station entrance");      // "South to MBL Platform"
+  const desc = kv.get("incident description");      // "Degrade mode - Sensor intermittent"
+  const gate = kv.get("faregate no");               // "450"
+  const incDate = kv.get("incident date");          // "12/22/25"
+  const incTime = kv.get("incident time");          // "5:00"
+  const created = kv.get("created date");           // "12/22/25, 6:22 AM"
+  const actionLogs = kv.get("action logs");         // may be blank
+
+  if(ticket){
+    const m = ticket.match(/FM-\s*(\d+)/i);
+    $("ticketId").value = m ? m[1] : ticket.replace(/^FM-/i,"").trim();
+  }
+  if(station) $("station").value = station;
+  if(gate) $("fgid").value = gate;
+
+  const dtIncident = toMDYHM(incDate || "", incTime || "");
+  if(dtIncident) $("dtReported").value = dtIncident;
+
+  const dtCreated = toMDYHM(created || "", "");
+  if(dtCreated) $("dtDispatch").value = dtCreated;
+
+  if(desc || entrance){
+    const lines = [];
+    if(desc) lines.push(desc);
+    if(entrance) lines.push(`Entrance: ${entrance}`);
+    $("issue").value = lines.join("\n");
+  }
+
+  if(actionLogs) $("actions").value = actionLogs;
+
+  // Refresh station-derived displays and gates datalist
+  setGatesForStation($("station").value.trim());
+  // normalize gate input after fill
+  $("fgid").value = normalizeGateNumber($("fgid").value);
+
+  setStatus("prefStatus", "Parsed Smartsheet row and filled fields.", "ok");
+}
+
+/* ---------- UI status + prefs ---------- */
 function setStatus(id, msg, kind){
   const el = $(id);
   el.textContent = msg || "";
@@ -1237,6 +1369,17 @@ $("copyRecipientsTop").onclick = () => {
   }
   copyText(all);
 };
+
+$("parsePaste").onclick = () => {
+  const raw = $("pasteRow").value || "";
+  if(!raw.trim()){
+    setStatus("prefStatus", "Paste a Smartsheet row first.", "err");
+    return;
+  }
+  fillFromSmartsheetPaste(raw);
+};
+
+$("clearPaste").onclick = () => { $("pasteRow").value = ""; };
 
 $("nowIncident").onclick = () => { $("dtReported").value = nowStamp(); };
 $("nowReceived").onclick = () => { $("dtDispatch").value = nowStamp(); };
